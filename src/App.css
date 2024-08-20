@@ -18,3 +18,7 @@ html {
   border-radius: 50%;
   position: absolute;
 }
+
+.trail {
+  position: absolute;
+}

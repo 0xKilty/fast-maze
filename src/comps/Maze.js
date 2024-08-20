@@ -82,6 +82,12 @@ function generateMaze(rows, cols) {
 function Maze() {
     const rows = 25;
     const cols = 45;
+
+    const dimensionProps = {
+        rows,
+        cols
+    }
+
     const lengthProps = {
         long: 25,
         short: 3
@@ -89,7 +95,7 @@ function Maze() {
     const grid = generateMaze(rows, cols);
     return (
         <>
-            <Player x={0} y={0} lengthProps={lengthProps} grid={grid} />
+            <Player x={0} y={0} lengthProps={lengthProps} dimensionProps={dimensionProps} grid={grid} />
             {grid.map((row, rowIndex) => (
                 <>
                     {row.map((cell, cellIndex) => (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Trail from './Trail';
 
 function Player(props) {
     const padding = 10;
@@ -14,70 +15,78 @@ function Player(props) {
         y: props.y
     });
 
-    const [currentWalls, setCurrentWalls] = useState(props.grid[0][0].walls);
- 
-    const movePlayer = (direction) => {
-        const { grid, lengthProps } = props;
-        const walls = grid[entry.y][entry.x].walls;
-        console.log(walls, entry.y, entry.x)
-        if (direction === 'ArrowUp' && !walls.top) {
-            
-        } else if (direction === 'ArrowDown' && !walls.bottom) {
-            
-        } else if (direction === 'ArrowLeft' && !walls.left) {
-            
-        } else if (direction === 'ArrowRight' && !walls.right) {
-            
-        }
-    };
+    const [trail, setTrail] = useState([]);
 
-    const handleKeyDown = (event) => {
-        switch (event.key) {
+    const notBounded = ({ x, y }, direction) => {
+        if (y < 0 || x < 0 || x >= props.dimensionProps.cols || y >= props.dimensionProps.rows) {
+            return false
+        }
+        const { top, right, left, bottom } = props.grid[y][x].walls;
+
+        switch (direction) {
             case 'ArrowUp':
-                setCoords((prevCoords) => ({ x: prevCoords.x, y: prevCoords.y - props.lengthProps.long }));
-                setEntry((prevEntry) => ({ x: prevEntry.x, y: prevEntry.y - 1 }));
-                break;
-            case 'ArrowDown':
-                setCoords((prevCoords) => ({ x: prevCoords.x, y: prevCoords.y + props.lengthProps.long }));
-                setEntry((prevEntry) => ({ x: prevEntry.x, y: prevEntry.y + 1 }));
-                break;
-            case 'ArrowLeft':
-                setCoords((prevCoords) => ({ x: prevCoords.x - props.lengthProps.long, y: prevCoords.y }));
-                setEntry((prevEntry) => ({ x: prevEntry.x - 1, y: prevEntry.y }));
-                break;
+                return !top;
             case 'ArrowRight':
-                setCoords((prevCoords) => ({ x: prevCoords.x + props.lengthProps.long, y: prevCoords.y }));
-                setEntry((prevEntry) => ({ x: prevEntry.x + 1, y: prevEntry.y }));
-                break;
+                return !right;
+            case 'ArrowLeft':
+                return !left;
+            case 'ArrowDown':
+                return !bottom;
             default:
-                break;
+                return true;
         }
     };
 
     useEffect(() => {
+        const handleKeyDown = (event) => {
+            let newCoords = { ...coords };
+            let newEntry = { ...entry };
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    newCoords.y -= props.lengthProps.long;
+                    newEntry.y -= 1;
+                    break;
+                case 'ArrowDown':
+                    newCoords.y += props.lengthProps.long;
+                    newEntry.y += 1;
+                    break;
+                case 'ArrowLeft':
+                    newCoords.x -= props.lengthProps.long;
+                    newEntry.x -= 1;
+                    break;
+                case 'ArrowRight':
+                    newCoords.x += props.lengthProps.long;
+                    newEntry.x += 1;
+                    break;
+                default:
+                    break;
+            }
+
+            if (notBounded(newEntry, event.key)) {
+                setCoords(newCoords);
+                setEntry(newEntry);
+                setTrail((prevTrail) => [...prevTrail, { entry: newEntry, direction: event.key }])
+            }
+        };
+
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
-
-    useEffect(() => {
-        console.log("Entry ", entry.x, entry.y)
-        setCurrentWalls((prevWalls) => props.grid[entry.y][entry.x].walls)
-    }, [entry]);
-
-    useEffect(() => {
-        console.log("Current Walls ", currentWalls)
-    }, [currentWalls]);
+    }, [coords, entry]);
 
     return (
-        <div style={{
-            height: `${size}px`,
-            width: `${size}px`,
-            left: `${coords.x}px`,
-            top: `${coords.y}px`
-        }} className='player'></div>
+        <>
+            <Trail trail={trail} lengthProps={props.lengthProps} />
+            <div style={{
+                height: `${size}px`,
+                width: `${size}px`,
+                left: `${coords.x}px`,
+                top: `${coords.y}px`
+            }} className='player'></div>
+        </>
     );
 }
 
